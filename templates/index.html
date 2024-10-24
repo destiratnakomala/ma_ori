@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahkamah Agung: NER & Summarization of Legal Documents</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@100;300;500;700&display=swap">
+    
+
+
+
+
+    <style>
+        /* <!-- fonts --> */
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Hind+Madurai:wght@300;400;500;600;700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+
+        /* Custom Styles */
+        body {
+            font-family: 'Ubuntu', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .dark-theme .dataframe-wrapper th,
+        .dark-theme .dataframe-wrapper td {
+            color: black; /* Mengubah warna teks menjadi hitam */
+        }
+        .dark-theme .dataframe-list-wrapper th,
+        .dark-theme .dataframe-list-wrapper td {
+            color: black; /* Mengubah warna teks menjadi hitam */
+        }
+        .header {
+            /* display: flex; */
+            align-items: center;
+            padding: 20px;
+            background-color: #e0d8a6d7;
+            color: white;
+        }
+        .logo {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+        .header-text {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .title {
+            font-style: normal;
+            margin-top: 30px;
+            text-align: center;
+            font-size: 36px;
+        }
+        .pdf-box {
+            background-color: white;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0);
+        }
+        .form-control {
+            margin-bottom: 0px;
+        }
+        .btn-primary {
+            width: 100%;
+        }
+        .dataframe-wrapper {
+            max-height: 340px;
+            overflow-y: auto;
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            border-radius: 30px;
+        }
+
+        .dataframe-list-wrapper {
+            max-height: 510px;
+            overflow-y: auto;
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        .dataframe-wrapper th, .dataframe-wrapper td {
+            border: 1px solid #f8fbff;
+            padding: 8px;
+            text-align: left;
+        }
+        .dataframe-wrapper th {
+            background-color:#f8fbff;
+            color: #333;
+        }
+        .dataframe-wrapper tr:nth-child(even){background-color: #f9f9f9;}
+        .dataframe-wrapper tr:hover {background-color: #ddd;}
+        .iframe-container {
+            position: relative;
+            overflow: hidden;
+            padding-top: 56.25%; /* Aspect ratio 16:9 */
+        }
+        .iframe-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .footer {
+            background-color: #000000;
+            color: white;
+            padding: 15px ;
+            margin-top: 10px;
+        }
+        .dark-theme {
+            background-color: #000000;
+            color: white;
+        }
+        /* Add this to your existing <style> section */
+        #myBtn:hover {
+            background-color: #000000; /* Add a darker background on hover */
+        }
+        .btn i{
+            color:#cedef8;
+        }
+        .btn:hover{
+            background-color: #1379ff;
+        }
+        .btn {
+        color:#1379ff00;
+        border-color: #1379ff00;
+        margin: 8px;
+        }
+        .btn-green {
+        background-color: #1379ff; /* Warna hijau Bootstrap */
+        border-color: #1379ff;
+        }
+        .btn-green:hover {
+        background-color: #cedef8;
+        border-color: #cedef8;
+        }
+        .view-btn {
+        position: absolute;
+        top: 0;
+        right: 0;
+
+        }
+        .parent-container {
+        position: relative;
+        }
+        .align-with-title {
+        display: flex;
+        align-items: center; /* Menyejajarkan item secara vertikal */
+        justify-content: space-between; /* Menyejajarkan item secara horizontal */
+        }
+        /* Animasi putar-mutar */
+        /* Animasi loading */
+        @keyframes lds-dual-ring {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .lds-dual-ring {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+        }
+        .lds-dual-ring:after {
+            content: " ";
+            display: block;
+            width: 64px;
+            height: 64px;
+            margin: 8px;
+            border-radius: 50%;
+            border: 6px solid#cedef8;
+            border-color:#cedef8#cedef8 transparent;
+            animation: lds-dual-ring 1.2s linear infinite;
+        }
+        .small-font {
+            font-size: 12px; /* Atur ukuran font sesuai kebutuhan */
+        }
+        .table-pdf {
+        border-radius: 25px;
+        margin: 8px;
+        height: auto;
+        }
+
+        .styled-element {
+        background-color: transparent; /* Removes background color */
+        font-style: 2px solid blue;        /* Adds a border color */
+        padding: 10px;                 /* Adds some padding */
+        font-family: 'Ubuntu', sans-serif;
+        font-style: normal;            /* Ensures the font is not italic */
+        font-size: 1.17em;             /* Sets the font size to be the same as <h3> */
+        }
+
+        .scale-container {
+            display : flex;
+            margin: 20px;
+            
+            
+
+        }
+        .scale-left {
+            flex: 8%;
+            margin: 15px;
+
+
+        }
+        .scale-middle {
+            flex: 32%;
+            background-color: #e5f1fe;
+            border-radius: 25px;
+            margin-left: 20px;
+            margin-right: 10px;
+            height: 600px;
+
+
+        }
+        
+        .scale-middle:hover {
+        border-color: #007bff; /* Change border color on hover */
+        box-shadow: 2px 2px 4px rgba(144, 141, 141, 0.985);
+
+        }
+
+        
+        .scale-right {
+            flex: 60%;
+            border-radius: 20px;
+            border:solid#fdfdfd00;
+
+
+        }
+
+
+        .scale-topleft {
+            flex: 10%;
+
+            
+        }
+
+        .scale-topright {
+            flex: 100%;
+            margin-bottom: 2px;
+            margin-right: 10px;
+            
+        }
+        .card-list {
+            height: 10px;
+            margin-bottom: 20px;
+            margin-top: 20px;
+            margin: 10px;
+
+
+        .card:hover {
+        border-color: #007bff; /* Change border color on hover */
+        box-shadow: 0px 2px 4px rgba(144, 141, 141, 0.985);
+
+        }
+
+        .card-list:hover {
+        border-color: #007bff; /* Change border color on hover */
+        box-shadow: 2px 2px 4px rgba(144, 141, 141, 0.985);
+
+        }
+
+
+        .pdf-list-box {
+        /* Set the height of the PDF box to match the height of the card-list */
+        height: 50%;
+    }
+        .dataframe-list-wrapper th, .dataframe-list-wrapper td {
+            border: 1px solid #f8fbff78;
+            border-radius: 30px;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .dataframe-wrapper:hover {
+            border-color: #007bff; /* Change border color on hover */
+            box-shadow: 0 2px 4px rgba(144, 141, 141, 0.896);
+
+        }
+        .dataframe-list-wrapper th {
+            background-color:#f8fbff;
+            color: #333;
+        }
+        .dataframe-list-wrapper tr:nth-child(even){background-color: #f9f9f9;}
+        .dataframe-list-wrapper tr:hover {background-color: #ddd;}
+        .iframe-container {
+            position: relative;
+            overflow: hidden;
+            padding-top: 56.25%; /* Aspect ratio 16:9 */
+        }
+
+    }
+
+    .icon-box:hover {
+        border-color: #007bff; /* Change border color on hover */
+        box-shadow: 0 2px 4px rgba(144, 141, 141, 0.896);
+        box-shadow: 0 4px 10px  #93bcff;;
+
+
+    }
+    .icon-box {
+        border-radius: 15px;
+        padding: 10px; /* Reduced padding for smaller box */
+        margin-bottom: 40px; /* Increased margin for bigger gap */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column; 
+        text-align: center; /* Center align text */
+        height: auto;
+        width: auto;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.225);
+    }
+    .icon {
+        width: 40%; /* Adjusted icon size */
+        height: 40%; /* Adjusted icon size */
+
+        
+    }
+    icon-text {
+        font-size: 12px; /* Adjusted text size */
+        margin-top: 10px; /* Increased margin for bigger gap */
+        margin-bottom: 0; /* Reset bottom margin */
+    }
+
+    .text-kpi{
+        margin:0px;
+    }
+
+    .nav-container {
+        display : flex;
+        margin: 20px;
+        
+        
+
+    }
+    .nav-left {
+        flex: 8%;
+        
+    }
+    .nav-right {
+        flex: 8%; 
+    }
+    .pdf-viewer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+        }
+    .pdf-viewer iframe {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        height: 80%;
+    }
+    .pdf-viewer .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 30px;
+            color: white;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+
+<script>
+    // Function to open file input dialog when the first icon is clicked
+    function chooseFile() {
+        document.getElementById('fileInput').click();
+    }
+
+    // Function to submit the form containing the file input when the second icon is clicked
+    function uploadFile() {
+        document.getElementById('uploadForm').submit();
+    }
+
+
+    function submitSelectForm(event) {
+    event.preventDefault();
+    document.getElementById('select-form').submit();
+    }
+
+    function showPDF(pdfUrl) {
+            var pdfViewer = document.getElementById("pdfViewer");
+            pdfViewer.style.display = "block";
+            var iframe = pdfViewer.querySelector("iframe");
+            iframe.src = pdfUrl;
+        }
+
+    function closePDF() {
+        var pdfViewer = document.getElementById("pdfViewer");
+        pdfViewer.style.display = "none";
+    }
+
+    document.getElementById('pdfViewer').addEventListener('click', function(event) {
+        if (event.target === this) {
+            closePDF();
+        }
+    });
+
+
+
+
+
+
+
+</script>
+
+<body>
+    <!-- Header Section -->
+    <div class="navbar navbar bg-transparent shadow-sm">
+        
+        <div class="nav-left" style=" margin: 0px;">
+            <a href="https://putusan3.mahkamahagung.go.id/beranda.html" class="navbar-brand d-flex align-items-center">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/0/0f/Logo_Mahkamah_Agung_RI.png" class="logo" alt="Logo" style="width: 40px; height: 40px; margin: 10px"> <!-- Reduce logo size -->
+                <div class="header-text" style="font-size: 13px">Mahkamah Agung Republik Indonesia</div> <!-- Reduce font size -->
+            </a>
+        </div>
+
+    <div class="navbar navbar bg-transparent" style=" margin: 0px;">
+    <!-- <div class="pdf-box" -->
+        <form action="/" method="get">
+            <div class="input-group" style="font-size: 12px;border-radius: 20px;">
+                <input type="text" class="form-control small-font" name="search_query" placeholder="Search for a PDF...">
+                <div class="input-group-append" style=" margin: 0px;">
+                    <button class="btn btn-primary btn-green" type="submit"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </form>
+    <!-- </div> -->
+    </div>
+    </div>
+
+
+    <div class="scale-container">
+        <!-- <div class="scale-topleft"> 
+
+            <img class="icon"  src="https://cdn-icons-png.freepik.com/512/14236/14236854.png" alt="Icon 1">
+
+        </div> -->
+        <div class="scale-topright"> 
+            <!-- CARD  -->
+            <div class="row">
+
+            <div class="col-md-4 "> <!-- Adjusted for three cards -->
+                <div class="card text-center" style="border-radius: 20px;">
+                    <div class="card-header" style="background-color: #e5f1fe; color: #1578ff; font-size: 16px; border-top-left-radius: 10px; border-top-right-radius: 10px;font-style: normal;">
+                        <text-kpi class = "styled-element", style=" font-weight: bold; "> Putusan Keseluruhan</text-kpi>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text" style="font-size: 20px; font-weight: bold;">{{ pdf_count }}</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Card 2 -->
+            <div class="col-md-4">
+                <div class="card text-center" style="border-radius: 20px;">
+                    <div class="card-header" style="background-color: #e5f1fe; color: #1578ff; font-size: 16px; border-top-left-radius: 10px; border-top-right-radius: 10px;font-style: normal;">
+                        <text-kpi class =  "styled-element" , style=" font-weight: bold;">Putusan Baru</text-kpi>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text" style="font-size: 20px; font-weight: bold;">{{ pdf_count_today }}</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Card 3 -->
+            <div class="col-md-4">
+                <div class="card text-center" style="border-radius: 20px;">
+                    <div class="card-header" style="background-color: #e5f1fe; color: #1578ff; font-size: 16px; border-top-left-radius: 10px; border-top-right-radius: 10px;font-style: normal;">
+                        <text-kpi class=" styled-element", style=" font-weight: bold;"> Putusan 3 Bulan Terakhir</text-kpi>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text" style="font-size: 20px; font-weight: bold;">{{ pdf_count_last_three_months }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        </div>
+    </div>
+
+    <div class="scale-container">
+        <div class="scale-left"> 
+            <form id="uploadForm" action="/" method="post" enctype="multipart/form-data" style="display: none;">
+                <!-- File input element -->
+                <input type="file" name="file" id="fileInput" style="display: none;">
+            </form>
+
+
+            <div class="icon-box">
+                <a href="https://putusan3.mahkamahagung.go.id/beranda.html">
+                <img class="icon" src="https://cdn-icons-png.freepik.com/512/14236/14236854.png" alt="Icon 1">
+            </a>
+                <icon-text>Beranda</icon-text>
+            </div>
+            <div class="icon-box">
+            <img class="icon" src="https://cdn-icons-png.freepik.com/512/9680/9680944.png" alt="Icon 2" onclick="chooseFile()">
+                <icon-text>Choose file</icon-text>
+                
+            </div>
+            <div class="icon-box">
+            <!-- Second icon for uploading chosen file -->
+            <img class="icon" src="https://cdn-icons-png.freepik.com/512/11918/11918679.png" alt="Icon 3" onclick="uploadFile()">
+            <icon-text>Upload File</icon-text>
+
+            <!-- Form containing the file input -->
+            <form id="uploadForm" action="/" method="post" enctype="multipart/form-data" style="display: none;">
+                <!-- File input element -->
+                <input type="file" name="file" id="fileInput" style="display: none;">
+            </form>
+            
+            </div>
+
+            <form id="button-form" class="d-flex align-items-center justify-content-center" onsubmit="submitSelectForm(event)">
+                <div class="icon-box" style="cursor: pointer;" onclick="submitSelectForm(event)">
+                    <img class="icon" src="https://cdn-icons-png.freepik.com/512/8473/8473370.png" alt="Icon 1">
+                    <icon-text>Process</icon-text>
+                </div>
+            </form>
+
+
+            <!-- VIEW -->
+            <div class="icon-box" onclick="showPDF('{{ embed_pdf }}')">
+                <img class="icon" src="https://cdn-icons-png.freepik.com/512/14014/14014688.png" alt="Icon 1">
+                <icon-text>View</icon-text>
+            </div>
+        
+            <div class="pdf-viewer" id="pdfViewer">
+                <span class="close-btn" onclick="closePDF()">×</span>
+                <iframe src="" frameborder="0"></iframe>
+            </div>
+
+
+
+            
+
+
+
+        </div>
+        <div class="scale-middle"> 
+            <div class="card-list text-center" style="border-radius: 20px;">
+                <div class="card-list-header" style="background-color: #e5f1fe; color: #1578ff; font-size: 16px; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+                    <h6>Daftar Putusan</h6>
+                </div>
+                <div class="pdf-box dataframe-list-wrapper table-responsive" style="font-weight: bold;;">
+                
+
+                    <div class="pdf-box">
+                        <!-- Select Form -->
+                        <form id="select-form" action="/" method="get" class="d-flex align-items-center justify-content-center">
+                            <div class="input-group" style="font-size: 14px;">
+                                <select id="selected_pdf" name="selected_pdf" class="form-select small-font">
+                                    {% for pdf in filtered_pdfs %}
+                                        <option value="{{ pdf }}">{{ pdf }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+
+
+
+
+
+
+
+                    <div class="table-pdf">
+                    {{ pdf_table|safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="scale-right">
+
+            <!-- summary  -->
+            <div class="card" style="border-radius: 12px; margin-bottom: 20px">
+                <div class="card-header" style="background-color: #e5f1fe; color: #1578ff; font-size: 16px; border-top-left-radius: 10px; border-top-right-radius: 10px;text-align: center;">
+                    <h6>Kesimpulan</h6>
+                </div>
+                <div class="pdf-box dataframe-wrapper table-responsive" style="font-weight: bold;"><!-- PDF Table -->
+                    {{ conclusion|safe }}
+                </div>
+            </div>
+
+
+            <div class="card" style="border-radius: 12px; margin-bottom: 20px">
+                <div class="card-header" style="background-color: #e5f1fe; color: #1578ff; font-size: 16px; border-top-left-radius: 10px; border-top-right-radius: 10px;text-align: center;">
+            
+            <h6 style: "">Detail</h6>
+                </div>
+                <div class="pdf-box dataframe-wrapper table-responsive" style="font-weight: bold;"><!-- PDF Table -->
+                    <div class="table-pdf">
+                    {{ summary_result|safe }}
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+    <div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewModalLabel">{{ pdf_name }}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">                    
+                    <iframe id="pdfFrame" src="" width="100%" height="600px"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+</div>
+    <button onclick="topFunction()" id="myBtn" title="Go to top" style="display: none; position: fixed; bottom: 15px; right: 20px; z-index: 99; font-size: 12px; border: none; outline: none; background-color: rgb(231, 231, 231); color: rgb(5, 5, 5); cursor: pointer; padding: 10px; border-radius: 4px;">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    <!-- LOADING -->
+    <!-- LOADING -->
+    <div id="loading-icon" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="lds-dual-ring"></div>
+    </div>
+<!-- END LOADING-->
+    <!-- END LOADING-->
+  
+    <!-- Footer Section -->
+    <!-- <footer class="text-body-secondary py-4" style="background-color: #000000;">
+        <div class="container">
+            <p class="float-end mb-1" style="color: white; font-size: 0.9rem;">
+                <a href="#" style="color: #ffffff; font-size: 0.9rem;"><i class="fas fa-arrow-up"></i></a>
+            </p>
+            <p class="mb-1" style="color: #ffffff; font-size: 0.9rem;">&copy; 2024 Fortech</p>
+        </div>
+    </footer> -->
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+        $('#viewModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var pdfUrl = button.data('pdf') // Extract info from data-* attributes
+            var modal = $(this)
+            modal.find('.modal-body #pdfFrame').attr('src', pdfUrl)
+        })
+
+        // Toggle Theme Button
+        $('#themeToggle').click(function() {
+            $('body').toggleClass('dark-theme');
+        });
+        function showLoading() {
+        document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+        document.getElementById('loading').style.display = 'none';
+         }
+         // Ketika tombol submit diklik, tampilkan ikon loading
+        $("button[type='submit']").click(function() {
+            $("#loading-icon").show();
+        });
+        // Setelah proses selesai, sembunyikan ikon loading
+        // Misalnya, setelah selesai unggah atau pencarian selesai
+        $("#loading-icon").hide();
+
+        function triggerFileInput(id) {
+        document.getElementById(id).click();
+        }
+    </script>
+</body>
+</html>
